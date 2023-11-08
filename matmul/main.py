@@ -37,7 +37,6 @@ void matmul(const float* a, const float* b, float* c, int width) {
 
 
 for size in list:
-    mempool = cp.get_default_memory_pool()
     print(size, 'size')
     a = cp.random.random((size, size))
     b = cp.random.random((size, size))
@@ -56,4 +55,3 @@ for size in list:
     cpu_matmul(a_cpu, b_cpu, size)
     cpu_time = time.perf_counter() - t
     print(cpu_time, 'cpu_time')
-    mempool.free_all_blocks()
