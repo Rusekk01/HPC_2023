@@ -12,7 +12,8 @@ def cpu_matmul(a, b, n):
                 c[i, j] += a[i, j]*b[i, j]
     return c
 
-list = [50, 100, 200, 400, 800, 1200, 1600, 1800, 2000]
+length = 100
+list = [50, length] #первый запуск всегда медленнее второго, даже при одинаоковой длине
 
 add_kernel = cp.RawKernel(r'''
 extern "C" __global__
@@ -35,12 +36,11 @@ void matmul(const float* a, const float* b, float* c, int width) {
 ''',
 "matmul")
 
-
 for size in list:
     print(size, 'size')
-    a = cp.random.random((size, size))
-    b = cp.random.random((size, size))
-    c = cp.zeros((size, size))
+    a = cp.random.random((size, size), dtype=cp.float32)
+    b = cp.random.random((size, size), dtype=cp.float32)
+    c = cp.zeros((size, size), dtype=cp.float32)
     a_cpu = np.random.random((size, size))
     b_cpu = np.random.random((size, size))
     t = time.perf_counter()
