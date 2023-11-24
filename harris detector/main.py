@@ -102,6 +102,7 @@ def CUDA_harris(img_dir,window_size,k,threshold):
     dy2_gpu = cp.asarray(dy2.flatten())
     dxy_gpu = cp.asarray(dxy.flatten())
     matrix_R_gpu = cp.zeros((height*width,))
+    #   Шаг 4 - Объявление ядра для вычисления матрицы R
     kernel = cp.RawKernel(r'''
     extern "C" __global__
     void compute_R(const double* dx2, const double* dy2, const double* dxy, double* matrix_R, const int width, const int height, const int offset, const double k) {
@@ -131,13 +132,9 @@ def CUDA_harris(img_dir,window_size,k,threshold):
 
     kernel((32, 32), (32, 32), (dx2_gpu, dy2_gpu, dxy_gpu, matrix_R_gpu, width, height, offset, k))
 
-    #print(matrix_R_gpu)
-
     matrix_R = np.array(matrix_R_gpu.get()).reshape(height, width)
 
-    print(matrix_R.max(), 'max cuda')
-
-    #   Шаг 6 - Сравнение с пороговым значением
+    #   Шаг 5 - Сравнение с пороговым значением
     cv2.normalize(matrix_R, matrix_R, 0, 1, cv2.NORM_MINMAX)
     for y in range(offset, height-offset):
         for x in range(offset, width-offset):
@@ -151,18 +148,6 @@ def CUDA_harris(img_dir,window_size,k,threshold):
     plt.savefig('CUDA_harris_detector-thresh_%s.png'%(threshold), bbox_inches='tight')
     f2.show()
 
-image = cv2.imread('cubes.jpg')
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-gray = np.float32(gray)
-dst = cv2.cornerHarris(gray, 2, 3, 0.04)
-dst = cv2.dilate(dst, None)
-print(dst.max())
-image[dst>0.01*dst.max()] = [0,0,255]
-cv2.imshow('image', image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-
 t = time.perf_counter()
 CUDA_harris("cubes.jpg", 8, 0.04, 0.45)
 gpu_time = time.perf_counter() - t
@@ -173,6 +158,5 @@ t = time.perf_counter()
 my_harris("cubes.jpg", 8, 0.04, 0.45)
 cpu_time = time.perf_counter() - t
 print(cpu_time, 'cpu_time')
-
 
 input()
