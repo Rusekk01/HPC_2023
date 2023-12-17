@@ -32,9 +32,6 @@ def cuda_sp (img_dir, filter_size):
     data = np.array(Image.open(img_dir).convert("L"))
     temp = []
     indexer = filter_size // 2
-    data_final = []
-    data_final = np.zeros((len(data),len(data[0])))
-    data_final = np.pad(data_final, pad_width=indexer, mode='edge')
     data = np.pad(data, pad_width=indexer, mode='edge')
     data_gpu = cp.asarray(data.flatten())
     result_gpu = cp.zeros(data_gpu.shape[0], dtype=cp.uint8)
